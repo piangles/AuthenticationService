@@ -2,12 +2,12 @@ package com.TBD.backbone.services.auth;
 
 import java.util.UUID;
 
-import com.TBD.backbone.services.Tier2ServiceLocator;
+import com.TBD.backbone.services.Locator;
 import com.TBD.backbone.services.logging.LoggingService;
 
 public final class AuthenticationServiceImpl implements AuthenticationService
 {
-	private LoggingService logger = Tier2ServiceLocator.getInstance().getLoggingService();
+	private LoggingService logger = Locator.getInstance().getLoggingService();
 
 	public AuthenticationServiceImpl()
 	{
