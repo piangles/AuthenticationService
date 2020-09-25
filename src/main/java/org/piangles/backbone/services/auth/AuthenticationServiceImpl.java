@@ -1,9 +1,12 @@
-package com.TBD.backbone.services.auth;
+package org.piangles.backbone.services.auth;
 
 import java.util.UUID;
 
-import com.TBD.backbone.services.Locator;
-import com.TBD.backbone.services.logging.LoggingService;
+import org.piangles.backbone.services.Locator;
+import org.piangles.backbone.services.auth.AuthenticationException;
+import org.piangles.backbone.services.auth.AuthenticationResponse;
+import org.piangles.backbone.services.auth.AuthenticationService;
+import org.piangles.backbone.services.logging.LoggingService;
 
 public final class AuthenticationServiceImpl implements AuthenticationService
 {
