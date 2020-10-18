@@ -3,18 +3,21 @@ package org.piangles.backbone.services.auth;
 import java.util.UUID;
 
 import org.piangles.backbone.services.Locator;
-import org.piangles.backbone.services.auth.AuthenticationException;
-import org.piangles.backbone.services.auth.AuthenticationResponse;
-import org.piangles.backbone.services.auth.AuthenticationService;
+import org.piangles.backbone.services.auth.dao.AuthenticationDAO;
+import org.piangles.backbone.services.auth.dao.AuthenticationDAOImpl;
 import org.piangles.backbone.services.logging.LoggingService;
 
 public final class AuthenticationServiceImpl implements AuthenticationService
 {
 	private LoggingService logger = Locator.getInstance().getLoggingService();
 
-	public AuthenticationServiceImpl()
+	private AuthenticationDAO authenticationDAO = null;
+	private PasswordManagment passwordManagment = null;
+	
+	public AuthenticationServiceImpl() throws Exception
 	{
-		
+		authenticationDAO = new AuthenticationDAOImpl();
+		passwordManagment = new PasswordManagment(authenticationDAO);
 	}
 
 	/**
@@ -58,16 +61,14 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	}
 
 	@Override
-	public void generateResetToken(String userId) throws AuthenticationException
+	public boolean generateResetToken(String loginId) throws AuthenticationException
 	{
-		// TODO Auto-generated method stub
-		
+		return passwordManagment.generateResetToken(loginId);
 	}
 
 	@Override
 	public AuthenticationResponse validatePasswordStrength(String password) throws AuthenticationException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return passwordManagment.validatePasswordStrength(password);
 	}
 }
