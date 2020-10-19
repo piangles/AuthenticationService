@@ -9,8 +9,8 @@ import org.piangles.core.dao.DAOException;
 
 public interface AuthenticationDAO
 {
-	public boolean createAuthenticationEntry(Credential credential) throws DAOException;
-	public AuthenticationResponse authenticate(Credential credential) throws DAOException;
+	public boolean createAuthenticationEntry(String userId, Credential credential) throws DAOException;
+	public AuthenticationResponse authenticate(Credential credential, int maxNumberOfAttempts) throws DAOException;
 	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws AuthenticationException;
 	public AuthenticationResponse persistGeneratedToken(String loginId, String token, Date tokenExpirationTime) throws AuthenticationException;
 }
