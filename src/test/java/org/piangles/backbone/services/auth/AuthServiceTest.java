@@ -28,13 +28,13 @@ public class AuthServiceTest extends Thread implements SessionAwareable
 		{
 			AuthenticationService authService = Locator.getInstance().getAuthenticationService();
 
-			String loginId = "testuser@piangles.com";
-			String password = "password";
+			String loginId = "testuser@piangles.org";
+			String password = "Password@1";
 			String token = "\"6'Z'm4p";
-			Credential credential = new Credential(loginId, token);
+			Credential credential = new Credential(loginId, password);
 			
-//			boolean result = authService.createAuthenticationEntry("abc001", credential);
-//			System.out.println("Result of createAuthenticationEntry:" + result);
+			boolean result = authService.createAuthenticationEntry("08f9c02d", credential);
+			System.out.println("Result of createAuthenticationEntry:" + result);
 
 			AuthenticationResponse response = authService.authenticate(credential);
 			System.out.println(response);
