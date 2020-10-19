@@ -58,7 +58,7 @@ public class PasswordManagment
 		{
 			List<String> failureReasons = validator.getMessages(result);
 			logger.info("Specified password does not meet password strength rules: " + failureReasons);
-			response = new AuthenticationResponse(FailureReason.TooManyAttempts, failureReasons);
+			response = new AuthenticationResponse(FailureReason.PasswordDoesNotMeetStrength, failureReasons);
 		}
 
 		return response;

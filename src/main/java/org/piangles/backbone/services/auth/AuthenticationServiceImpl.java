@@ -40,14 +40,18 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	}
 
 	@Override
-	public boolean createAuthenticationEntry(String userId, Credential credential) throws AuthenticationException
+	public AuthenticationResponse createAuthenticationEntry(String userId, Credential credential) throws AuthenticationException
 	{
-		boolean result = false; 
+		AuthenticationResponse response = null; 
 		logger.info("Creating an authentication entry for UserId: " + userId);
 		try
 		{
-			passwordManagment.validatePasswordStrength(credential.getPassword());
-			result = authenticationDAO.createAuthenticationEntry(userId, createEncryptedCredential(credential));
+			response = passwordManagment.validatePasswordStrength(credential.getPassword());
+			if (response.isRequestSuccessful())
+			{
+				boolean result = authenticationDAO.createAuthenticationEntry(userId, createEncryptedCredential(credential));
+				response = new AuthenticationResponse(userId, result);
+			}
 		}
 		catch (CryptoException | DAOException e)
 		{
@@ -55,7 +59,7 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 			logger.error(message + "Id: " + userId, e);
 			throw new AuthenticationException(message, e);
 		}
-		return result;
+		return response;
 	}
 
 	@Override
