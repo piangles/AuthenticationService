@@ -4,7 +4,7 @@ import org.javatuples.Pair;
 import org.piangles.backbone.services.Locator;
 import org.piangles.backbone.services.crypto.CryptoException;
 import org.piangles.backbone.services.crypto.CryptoService;
-import org.piangles.core.services.remoting.SessionMockThread;
+import org.piangles.core.services.remoting.SessionImpersonator;
 
 public class CryptoCaller
 {
@@ -14,11 +14,11 @@ public class CryptoCaller
 	
 	public Pair<String, String> ecrypt(String value1, String value2) throws CryptoException
 	{
-		SessionMockThread<Pair<String, String>, CryptoException> smt = new SessionMockThread<Pair<String, String>, CryptoException>(() ->{
+		SessionImpersonator<Pair<String, String>, CryptoException> smt = new SessionImpersonator<Pair<String, String>, CryptoException>(() ->{
 			String encryptedLogin = crypto.encrypt(value1);
 			String encryptedPassword = crypto.encrypt(value2);
 			return Pair.with(encryptedLogin, encryptedPassword);
-		}, "TODOSessionId");
+		});
 		
 		return smt.execute();
 	}
