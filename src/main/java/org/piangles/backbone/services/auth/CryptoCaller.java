@@ -15,9 +15,18 @@ public class CryptoCaller
 	public Pair<String, String> ecrypt(String value1, String value2) throws CryptoException
 	{
 		SessionImpersonator<Pair<String, String>, CryptoException> smt = new SessionImpersonator<Pair<String, String>, CryptoException>(() ->{
-			String encryptedLogin = crypto.encrypt(value1);
-			String encryptedPassword = crypto.encrypt(value2);
-			return Pair.with(encryptedLogin, encryptedPassword);
+			String encryptedValue1 = null;
+			if (value1 == null)
+			{
+				encryptedValue1 = "";
+			}
+			else
+			{
+				encryptedValue1 = crypto.encrypt(value1);
+			}
+			String encryptedValue2 = crypto.encrypt(value2);
+
+			return Pair.with(encryptedValue1, encryptedValue2);
 		});
 		
 		return smt.execute();
