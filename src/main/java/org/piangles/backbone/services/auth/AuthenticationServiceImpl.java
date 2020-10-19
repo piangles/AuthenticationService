@@ -1,25 +1,22 @@
 package org.piangles.backbone.services.auth;
 
+import org.javatuples.Pair;
 import org.piangles.backbone.services.Locator;
 import org.piangles.backbone.services.auth.dao.AuthenticationDAO;
 import org.piangles.backbone.services.auth.dao.AuthenticationDAOImpl;
 import org.piangles.backbone.services.config.ConfigService;
 import org.piangles.backbone.services.config.Configuration;
 import org.piangles.backbone.services.crypto.CryptoException;
-import org.piangles.backbone.services.crypto.CryptoService;
 import org.piangles.backbone.services.logging.LoggingService;
 import org.piangles.backbone.services.session.SessionManagementService;
 import org.piangles.core.dao.DAOException;
 
 public final class AuthenticationServiceImpl implements AuthenticationService
 {
-	private static String cipherAuthorizationId = "7a948dce-1ebb-4770-b077-f453e60243da";
-	
 	private static final String COMPONENT_ID = "2f07e92e-8edf-4fed-897c-2df2bd2ae72d";
 	
 	private LoggingService logger = Locator.getInstance().getLoggingService();
 	private ConfigService configService = Locator.getInstance().getConfigService();
-	private CryptoService crypto = Locator.getInstance().getCryptoService();
 	private SessionManagementService sessionMgmtService = Locator.getInstance().getSessionManagementService();
 
 	private int maxNoOfAttempts = 5; //By default it is 5
@@ -81,7 +78,6 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 			logger.error("Unable to authenticate user because of: " + e.getMessage(), e);
 			response = new AuthenticationResponse(FailureReason.InternalError, null);
 		}
-		
 		return response;
 	}
 
@@ -118,8 +114,8 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	 */
 	private Credential createEncryptedCredential(Credential credential) throws CryptoException
 	{
-		String encryptedLogin = crypto.encrypt(credential.getLoginId());
-		String encryptedPassword = crypto.encrypt(credential.getPassword());
-		return new Credential(encryptedLogin, encryptedPassword);
+		Pair<String, String> tuple = new CryptoCaller().ecrypt(credential.getLoginId(), credential.getPassword());
+
+		return new Credential(tuple.getValue0(), tuple.getValue1());
 	}
 }

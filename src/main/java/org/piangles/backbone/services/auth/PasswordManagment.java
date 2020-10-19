@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.javatuples.Pair;
 import org.passay.CharacterData;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
@@ -18,16 +19,13 @@ import org.passay.WhitespaceRule;
 import org.piangles.backbone.services.Locator;
 import org.piangles.backbone.services.auth.dao.AuthenticationDAO;
 import org.piangles.backbone.services.crypto.CryptoException;
-import org.piangles.backbone.services.crypto.CryptoService;
 import org.piangles.backbone.services.logging.LoggingService;
 import org.piangles.core.dao.DAOException;
 
 public class PasswordManagment
 {
-	private static String cipherAuthorizationId = "fe54d786-55d0-4694-a2ac-994a6bd52eb9";
 	private static final String ALLOWED_SPL_CHARACTERS = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 	private LoggingService logger = Locator.getInstance().getLoggingService();
-	private CryptoService crypto = Locator.getInstance().getCryptoService();
 
 	private AuthenticationDAO authenticationDAO = null;
 	private List<Rule> passwordRules = null;
@@ -70,8 +68,9 @@ public class PasswordManagment
 		try
 		{
 			validatePasswordStrength(newPassword);
-			String encryptedOldPassword = crypto.encrypt(oldPassword);
-			String encryptedNewPassword = crypto.encrypt(newPassword);
+			Pair<String, String> tuple = new CryptoCaller().ecrypt(oldPassword, newPassword);
+			String encryptedOldPassword = tuple.getValue0();
+			String encryptedNewPassword = tuple.getValue1();
 			response = authenticationDAO.changePassword(userId, encryptedOldPassword, encryptedNewPassword);
 		}
 		catch (CryptoException | DAOException e)
@@ -93,8 +92,9 @@ public class PasswordManagment
 		c.add(Calendar.DATE, 1);
 		try
 		{
-			String encryptedLoginId = crypto.encrypt(loginId);
-			String encryptedToken = crypto.encrypt(token);
+			Pair<String, String> tuple = new CryptoCaller().ecrypt(loginId, token);
+			String encryptedLoginId = tuple.getValue0();
+			String encryptedToken = tuple.getValue1();
 			authenticationDAO.persistGeneratedToken(encryptedLoginId, encryptedToken, new java.sql.Date(c.getTime().toInstant().toEpochMilli()));
 		}
 		catch (CryptoException | DAOException e)
