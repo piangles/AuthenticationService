@@ -2,7 +2,6 @@ package org.piangles.backbone.services.auth.dao;
 
 import java.sql.Date;
 
-import org.piangles.backbone.services.auth.AuthenticationException;
 import org.piangles.backbone.services.auth.AuthenticationResponse;
 import org.piangles.backbone.services.auth.Credential;
 import org.piangles.backbone.services.auth.FailureReason;
@@ -44,16 +43,21 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	public AuthenticationResponse authenticate(Credential credential, int maxNumOfAttempts) throws DAOException
 	{
 		AuthenticationResponse response = null;
-		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 3, (sp)->{
+		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 7, (sp)->{
 			sp.setString(1, credential.getLoginId());
 			sp.setString(2, credential.getPassword());
 			sp.setInt(3, maxNumOfAttempts);
-		}, (rs)->{
+			
+			sp.registerOutParameter(4, java.sql.Types.VARCHAR);
+			sp.registerOutParameter(5, java.sql.Types.INTEGER);
+			sp.registerOutParameter(6, java.sql.Types.BOOLEAN);
+			sp.registerOutParameter(7, java.sql.Types.BOOLEAN);
+		}, (rs, call)->{
 			AuthenticationResponse dbResponse = null;
-			String userId = rs.getString(USER_ID);
-			int numOfAttempts = rs.getInt(NUM_ATTEMPTS);
-			boolean isToken = rs.getBoolean(IS_TOKEN);
-			boolean isActive = rs.getBoolean(IS_ACTIVE);
+			String userId = call.getString(USER_ID);
+			int numOfAttempts = call.getInt(NUM_ATTEMPTS);
+			boolean isToken = call.getBoolean(IS_TOKEN);
+			boolean isActive = call.getBoolean(IS_ACTIVE);
 			if (userId != null)
 			{
 				dbResponse = new AuthenticationResponse(userId, isToken);
@@ -83,16 +87,29 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	}
 
 	@Override
-	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws AuthenticationException
+	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws DAOException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		super.executeSP(SET_CREDENTIAL_SP, 6, (sp) -> {
+			sp.setString(1, userId);
+			sp.setString(2, null);
+			sp.setString(3, oldPassword);
+			sp.setString(4, newPassword);
+			sp.setString(5, null);
+			sp.setDate(6, null);
+		});
+		return new AuthenticationResponse(userId, true);
 	}
 
 	@Override
-	public AuthenticationResponse persistGeneratedToken(String loginId, String token, Date tokenExpirationTime) throws AuthenticationException
+	public void persistGeneratedToken(String loginId, String token, Date tokenExpirationTime) throws DAOException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		super.executeSP(SET_CREDENTIAL_SP, 6, (sp) -> {
+			sp.setString(1, null);
+			sp.setString(2, loginId);
+			sp.setString(3, null);
+			sp.setString(4, null);
+			sp.setString(5, token);
+			sp.setDate(6, tokenExpirationTime);
+		});
 	}
 }

@@ -4,6 +4,7 @@ import org.piangles.backbone.services.Locator;
 import org.piangles.backbone.services.auth.dao.AuthenticationDAO;
 import org.piangles.backbone.services.auth.dao.AuthenticationDAOImpl;
 import org.piangles.backbone.services.config.ConfigService;
+import org.piangles.backbone.services.config.Configuration;
 import org.piangles.backbone.services.crypto.CryptoException;
 import org.piangles.backbone.services.crypto.CryptoService;
 import org.piangles.backbone.services.logging.LoggingService;
@@ -12,7 +13,7 @@ import org.piangles.core.dao.DAOException;
 
 public final class AuthenticationServiceImpl implements AuthenticationService
 {
-	private static String cipherAuthorizationId = "";
+	private static String cipherAuthorizationId = "7a948dce-1ebb-4770-b077-f453e60243da";
 	
 	private static final String COMPONENT_ID = "2f07e92e-8edf-4fed-897c-2df2bd2ae72d";
 	
@@ -29,7 +30,13 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	{
 		authenticationDAO = new AuthenticationDAOImpl();
 		passwordManagment = new PasswordManagment(authenticationDAO);
-		//TODO get maxNoOfAttempts from Configuration 
+
+		Configuration config = configService.getConfiguration(COMPONENT_ID);
+		String valueAsStr = config.getValue("MaxNoOfAttemps");
+		if (valueAsStr != null)
+		{
+			maxNoOfAttempts = Integer.valueOf(valueAsStr).intValue();
+		}
 	}
 
 	@Override
@@ -39,6 +46,7 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 		logger.info("Creating an authentication entry for UserId: " + userId);
 		try
 		{
+			passwordManagment.validatePasswordStrength(credential.getPassword());
 			result = authenticationDAO.createAuthenticationEntry(userId, createEncryptedCredential(credential));
 		}
 		catch (CryptoException | DAOException e)
@@ -56,16 +64,15 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 		AuthenticationResponse response = null;
 		try
 		{
-			/**
-			 * 1. Encrypt the given password to check against the one in DB.
-			 * 2. TODO Audit the attempt.
-			 */
+			logger.info("Request to authenticate user.");
+			//TODO Audit the attempt -> Trigger in DB
 			response = authenticationDAO.authenticate(createEncryptedCredential(credential), maxNoOfAttempts);
 		}
 		catch (CryptoException | DAOException e)
 		{
+			logger.error("Exception authenticating:" + e.getMessage(), e);
 			/**
-			 * For authentication service, consume & log the errors and return just the response.
+			 * Consume & log the errors and return just the response for security reasons.
 			 */
 			logger.error("Unable to authenticate user because of: " + e.getMessage(), e);
 			response = new AuthenticationResponse(FailureReason.InternalError, null);
@@ -92,16 +99,23 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	@Override
 	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws AuthenticationException
 	{
-		//Check if the oldPassword matches the user
-		// TODO Auto-generated method stub
-		return null;
+		logger.info("Request to change password for UserId:" + userId);
+		//TODO if (sessionMgmtService.isValid(userId, sessionId)) -> nee to figure out how to get sessionId
+
+		return passwordManagment.changePassword(userId, oldPassword, newPassword);
 	}
 	
+	/**
+	 * All credentials are encrypted and saved in the database so need to enrypt
+	 * when we query as well.
+	 * @param credential
+	 * @return
+	 * @throws CryptoException
+	 */
 	private Credential createEncryptedCredential(Credential credential) throws CryptoException
 	{
 		String encryptedLogin = crypto.encrypt(credential.getLoginId());
 		String encryptedPassword = crypto.encrypt(credential.getPassword());
-		
 		return new Credential(encryptedLogin, encryptedPassword);
 	}
 }

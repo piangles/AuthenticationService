@@ -1,8 +1,11 @@
 package org.piangles.backbone.services.auth;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
+import org.passay.CharacterData;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 import org.passay.LengthRule;
@@ -14,11 +17,17 @@ import org.passay.RuleResult;
 import org.passay.WhitespaceRule;
 import org.piangles.backbone.services.Locator;
 import org.piangles.backbone.services.auth.dao.AuthenticationDAO;
+import org.piangles.backbone.services.crypto.CryptoException;
+import org.piangles.backbone.services.crypto.CryptoService;
 import org.piangles.backbone.services.logging.LoggingService;
+import org.piangles.core.dao.DAOException;
 
 public class PasswordManagment
 {
+	private static String cipherAuthorizationId = "fe54d786-55d0-4694-a2ac-994a6bd52eb9";
+	private static final String ALLOWED_SPL_CHARACTERS = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 	private LoggingService logger = Locator.getInstance().getLoggingService();
+	private CryptoService crypto = Locator.getInstance().getCryptoService();
 
 	private AuthenticationDAO authenticationDAO = null;
 	private List<Rule> passwordRules = null;
@@ -26,7 +35,7 @@ public class PasswordManagment
 	public PasswordManagment(AuthenticationDAO authenticationDAO)
 	{
 		this.authenticationDAO = authenticationDAO;
-		
+
 		passwordRules = new ArrayList<>();
 		passwordRules.add(compileLengthRule());
 		passwordRules.addAll(compilePositiveMatchingRules());
@@ -55,34 +64,64 @@ public class PasswordManagment
 		return response;
 	}
 
+	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws AuthenticationException
+	{
+		AuthenticationResponse response = null;
+		try
+		{
+			validatePasswordStrength(newPassword);
+			String encryptedOldPassword = crypto.encrypt(oldPassword);
+			String encryptedNewPassword = crypto.encrypt(newPassword);
+			response = authenticationDAO.changePassword(userId, encryptedOldPassword, encryptedNewPassword);
+		}
+		catch (CryptoException | DAOException e)
+		{
+			logger.error("Exception updating password:" + e.getMessage(), e);
+			throw new AuthenticationException(e.getMessage(), e);
+		}
+		return response;
+	}
+	
 	public boolean generateResetToken(String loginId) throws AuthenticationException
 	{
 		PasswordGenerator passwordGenerator = new PasswordGenerator();
-		//Generate a token
-		String generatedPassword = passwordGenerator.generatePassword(compileLengthRule().getMinimumLength(), compilePositiveMatchingRules());
-		//Persist in the DAO
-		
-		//Send EMail from the UserProfile using userId 
-		//This will require first using loginId to lookup userId
-		//and using userId to get email
-		//Currently the loginId is the emailId : Should we just mandate the loginId is the emailId? Makes life easier for everyone.
-		//Then no lookup is required.
+		// Generate a token
+		String token = passwordGenerator.generatePassword(compileLengthRule().getMinimumLength(), compilePositiveMatchingRules());
+		// Persist in the DAO
+		Calendar c = Calendar.getInstance();
+		c.setTime(new Date());
+		c.add(Calendar.DATE, 1);
+		try
+		{
+			String encryptedLoginId = crypto.encrypt(loginId);
+			String encryptedToken = crypto.encrypt(token);
+			authenticationDAO.persistGeneratedToken(encryptedLoginId, encryptedToken, new java.sql.Date(c.getTime().toInstant().toEpochMilli()));
+		}
+		catch (CryptoException | DAOException e)
+		{
+			logger.error("Exception generating reset token:" + e.getMessage(), e);
+			throw new AuthenticationException(e.getMessage(), e);
+		}
+		// Send EMail from the UserProfile using userId
+		// This will require first using loginId to lookup userId
+		// and using userId to get email
+		// Currently the loginId is the emailId : Should we just mandate the
+		// loginId is the emailId? Makes life easier for everyone.
+		// Then no lookup is required.
 		return false;
 	}
 
-	
 	/**
-	 * Defined all the password rules here.
-	 * 1. Length of the password.
-	 * 2. Postive matching rules used by validator and generator.
-	 * 3. Negative matching rules used by validator only.
+	 * Defined all the password rules here. 1. Length of the password. 2.
+	 * Postive matching rules used by validator and generator. 3. Negative
+	 * matching rules used by validator only.
 	 * 
-	 * Validator needs negative matching to eliminate while
-	 * generator will only use positive matching to generate.
+	 * Validator needs negative matching to eliminate while generator will only
+	 * use positive matching to generate.
 	 */
 	private LengthRule compileLengthRule()
 	{
-		return new LengthRule(8, 12);		
+		return new LengthRule(8, 12);
 	}
 
 	private List<CharacterRule> compilePositiveMatchingRules()
@@ -91,19 +130,32 @@ public class PasswordManagment
 
 		// Rule 1: At least one Upper-case character
 		positiveMatchingRules.add(new CharacterRule(EnglishCharacterData.UpperCase, 1));
-		
+
 		// Rule 2: At least one Lower-case character
 		positiveMatchingRules.add(new CharacterRule(EnglishCharacterData.LowerCase, 1));
 
 		// Rule 3: At least one digit
 		positiveMatchingRules.add(new CharacterRule(EnglishCharacterData.Digit, 1));
 
-		// Rule 4: At least one special character
-		positiveMatchingRules.add(new CharacterRule(EnglishCharacterData.Special, 1));
-		
+		// Rule 4: At least one special character 
+		// ]
+		CharacterData specialChars = new CharacterData()
+		{
+			public String getErrorCode()
+			{
+				return EnglishCharacterData.Special.getErrorCode();
+			}
+
+			public String getCharacters()
+			{
+				return ALLOWED_SPL_CHARACTERS;
+			}
+		};
+		positiveMatchingRules.add(new CharacterRule(specialChars, 1));
+
 		return positiveMatchingRules;
 	}
-	
+
 	private List<Rule> compileNegativeMatchingRules()
 	{
 		List<Rule> negativeMatchingRules = new ArrayList<>();
