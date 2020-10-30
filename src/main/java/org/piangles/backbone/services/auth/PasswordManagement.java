@@ -22,7 +22,7 @@ import org.piangles.backbone.services.crypto.CryptoException;
 import org.piangles.backbone.services.logging.LoggingService;
 import org.piangles.core.dao.DAOException;
 
-public class PasswordManagment
+public class PasswordManagement
 {
 	private static final String ALLOWED_SPL_CHARACTERS = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 	private LoggingService logger = Locator.getInstance().getLoggingService();
@@ -30,7 +30,7 @@ public class PasswordManagment
 	private AuthenticationDAO authenticationDAO = null;
 	private List<Rule> passwordRules = null;
 
-	public PasswordManagment(AuthenticationDAO authenticationDAO)
+	public PasswordManagement(AuthenticationDAO authenticationDAO)
 	{
 		this.authenticationDAO = authenticationDAO;
 
@@ -102,6 +102,7 @@ public class PasswordManagment
 			logger.error("Exception generating reset token:" + e.getMessage(), e);
 			throw new AuthenticationException(e.getMessage(), e);
 		}
+		
 		// Send EMail from the UserProfile using userId
 		// This will require first using loginId to lookup userId
 		// and using userId to get email

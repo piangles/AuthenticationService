@@ -22,7 +22,7 @@ public class AuthenticationServiceContainer extends AbstractContainer
 
 	public AuthenticationServiceContainer()
 	{
-		super("AuthenticationService");
+		super(AuthenticationService.NAME);
 	}
 	
 	@Override

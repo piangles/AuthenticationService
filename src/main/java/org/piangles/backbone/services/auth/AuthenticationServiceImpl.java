@@ -21,12 +21,12 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 
 	private int maxNoOfAttempts = 5; //By default it is 5
 	private AuthenticationDAO authenticationDAO = null;
-	private PasswordManagment passwordManagment = null;
+	private PasswordManagement passwordManagment = null;
 	
 	public AuthenticationServiceImpl() throws Exception
 	{
 		authenticationDAO = new AuthenticationDAOImpl();
-		passwordManagment = new PasswordManagment(authenticationDAO);
+		passwordManagment = new PasswordManagement(authenticationDAO);
 
 		Configuration config = configService.getConfiguration(COMPONENT_ID);
 		String valueAsStr = config.getValue("MaxNoOfAttemps");
