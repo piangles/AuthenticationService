@@ -11,7 +11,7 @@ public class AuthenticationServiceContainer extends AbstractContainer
 		AuthenticationServiceContainer container = new AuthenticationServiceContainer();
 		try
 		{
-			container.performSteps();
+			container.performSteps(args);
 		}
 		catch (ContainerException e)
 		{

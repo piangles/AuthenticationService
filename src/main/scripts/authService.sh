@@ -1,6 +1,6 @@
 #!/bin/bash
 
-JAR_FILE=app-auth.jar
+JAR_FILE=AuthenticationService.jar
 PROCESS_NAME=AuthService
 
 function printUsage {
