@@ -1,4 +1,4 @@
-package org.piangles.backbone.services.auth.dao;
+package org.piangles.backbone.services.auth.impl.def;
 
 import java.sql.Date;
 

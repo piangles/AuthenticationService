@@ -35,7 +35,7 @@ public class AuthServiceTest extends Thread implements SessionAwareable
 			
 			AuthenticationResponse response = null;
 			
-			response = authService.createAuthenticationEntry("08f9c02d", credential);
+			response = authService.createAuthenticationEntry(AuthenticationType.Default, "08f9c02d", credential);
 			System.out.println("Result of createAuthenticationEntry:" + response);
 
 			response = authService.authenticate(AuthenticationType.Default, credential);

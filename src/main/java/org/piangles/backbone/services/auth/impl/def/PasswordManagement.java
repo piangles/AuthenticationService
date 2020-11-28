@@ -1,4 +1,4 @@
-package org.piangles.backbone.services.auth;
+package org.piangles.backbone.services.auth.impl.def;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -17,7 +17,9 @@ import org.passay.Rule;
 import org.passay.RuleResult;
 import org.passay.WhitespaceRule;
 import org.piangles.backbone.services.Locator;
-import org.piangles.backbone.services.auth.dao.AuthenticationDAO;
+import org.piangles.backbone.services.auth.AuthenticationException;
+import org.piangles.backbone.services.auth.AuthenticationResponse;
+import org.piangles.backbone.services.auth.FailureReason;
 import org.piangles.backbone.services.crypto.CryptoException;
 import org.piangles.backbone.services.logging.LoggingService;
 import org.piangles.core.dao.DAOException;

@@ -1,4 +1,4 @@
-package org.piangles.backbone.services.auth;
+package org.piangles.backbone.services.auth.impl.def;
 
 import org.javatuples.Pair;
 import org.piangles.backbone.services.Locator;
