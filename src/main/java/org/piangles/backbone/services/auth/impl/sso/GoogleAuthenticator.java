@@ -10,7 +10,7 @@ import org.piangles.backbone.services.logging.LoggingService;
 
 public class GoogleAuthenticator implements Authenticator 
 {
-	private static final String UNIMPLEMENTED = "This endpoint is not implemented for this Authenticator.";
+	private static final String UNSUPPORTED = "This endpoint is not supported for this Authenticator.";
 
 	private LoggingService logger = Locator.getInstance().getLoggingService();
 	
@@ -21,7 +21,7 @@ public class GoogleAuthenticator implements Authenticator
 	@Override
 	public AuthenticationResponse createAuthenticationEntry(String userId, Credential credential) throws AuthenticationException
 	{
-		throw new AuthenticationException(UNIMPLEMENTED);
+		throw new AuthenticationException(UNSUPPORTED);
 	}
 
 	@Override
@@ -35,18 +35,18 @@ public class GoogleAuthenticator implements Authenticator
 	@Override
 	public boolean generateResetToken(String loginId) throws AuthenticationException
 	{
-		throw new AuthenticationException(UNIMPLEMENTED);
+		throw new AuthenticationException(UNSUPPORTED);
 	}
 
 	@Override
 	public AuthenticationResponse validatePasswordStrength(String password) throws AuthenticationException
 	{
-		throw new AuthenticationException(UNIMPLEMENTED);
+		throw new AuthenticationException(UNSUPPORTED);
 	}
 
 	@Override
 	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws AuthenticationException
 	{
-		throw new AuthenticationException(UNIMPLEMENTED);
+		throw new AuthenticationException(UNSUPPORTED);
 	}
 }

@@ -10,11 +10,14 @@ import org.piangles.backbone.services.auth.FailureReason;
 import org.piangles.backbone.services.config.Configuration;
 import org.piangles.backbone.services.crypto.CryptoException;
 import org.piangles.backbone.services.logging.LoggingService;
+import org.piangles.backbone.services.session.SessionManagementService;
 import org.piangles.core.dao.DAOException;
 
 public class DefaultAuthenticator implements Authenticator 
 {
 	private LoggingService logger = Locator.getInstance().getLoggingService();
+	private SessionManagementService sessionMgmtService = Locator.getInstance().getSessionManagementService();
+	
 	private int maxNoOfAttempts = 5; //By default it is 5
 	private AuthenticationDAO authenticationDAO = null;
 	private PasswordManagement passwordManagment = null;
