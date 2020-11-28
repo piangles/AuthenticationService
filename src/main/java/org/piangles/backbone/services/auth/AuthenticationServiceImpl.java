@@ -1,9 +1,13 @@
 package org.piangles.backbone.services.auth;
 
-import org.javatuples.Pair;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.piangles.backbone.services.Locator;
 import org.piangles.backbone.services.auth.dao.AuthenticationDAO;
 import org.piangles.backbone.services.auth.dao.AuthenticationDAOImpl;
+import org.piangles.backbone.services.auth.impl.DefaultAuthenticator;
+import org.piangles.backbone.services.auth.impl.GoogleAuthenticator;
 import org.piangles.backbone.services.config.ConfigService;
 import org.piangles.backbone.services.config.Configuration;
 import org.piangles.backbone.services.crypto.CryptoException;
@@ -19,9 +23,9 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	private ConfigService configService = Locator.getInstance().getConfigService();
 	private SessionManagementService sessionMgmtService = Locator.getInstance().getSessionManagementService();
 
-	private int maxNoOfAttempts = 5; //By default it is 5
 	private AuthenticationDAO authenticationDAO = null;
 	private PasswordManagement passwordManagment = null;
+	private Map<AuthenticationType, Authenticator> authenticatorMap;
 	
 	public AuthenticationServiceImpl() throws Exception
 	{
@@ -29,11 +33,9 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 		passwordManagment = new PasswordManagement(authenticationDAO);
 
 		Configuration config = configService.getConfiguration(COMPONENT_ID);
-		String valueAsStr = config.getValue("MaxNoOfAttemps");
-		if (valueAsStr != null)
-		{
-			maxNoOfAttempts = Integer.valueOf(valueAsStr).intValue();
-		}
+		authenticatorMap = new HashMap<AuthenticationType, Authenticator>();
+		authenticatorMap.put(AuthenticationType.Default, new DefaultAuthenticator(config, authenticationDAO));
+		authenticatorMap.put(AuthenticationType.Google, new GoogleAuthenticator(config, authenticationDAO));
 	}
 
 	@Override
@@ -46,7 +48,7 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 			response = passwordManagment.validatePasswordStrength(credential.getPassword());
 			if (response.isRequestSuccessful())
 			{
-				boolean result = authenticationDAO.createAuthenticationEntry(userId, createEncryptedCredential(credential));
+				boolean result = authenticationDAO.createAuthenticationEntry(userId, new CredentialHelper().createEncryptedCredential(credential));
 				response = new AuthenticationResponse(userId, result);
 			}
 		}
@@ -60,25 +62,9 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	}
 
 	@Override
-	public AuthenticationResponse authenticate(Credential credential) throws AuthenticationException
+	public AuthenticationResponse authenticate(AuthenticationType type, Credential credential) throws AuthenticationException
 	{
-		AuthenticationResponse response = null;
-		try
-		{
-			logger.info("Request to authenticate user.");
-			//TODO Audit the attempt -> Trigger in DB
-			response = authenticationDAO.authenticate(createEncryptedCredential(credential), maxNoOfAttempts);
-		}
-		catch (CryptoException | DAOException e)
-		{
-			logger.error("Exception authenticating:" + e.getMessage(), e);
-			/**
-			 * Consume & log the errors and return just the response for security reasons.
-			 */
-			logger.error("Unable to authenticate user because of: " + e.getMessage(), e);
-			response = new AuthenticationResponse(FailureReason.InternalError, null);
-		}
-		return response;
+		return authenticatorMap.get(type).authenticate(credential);
 	}
 
 	@Override
@@ -100,22 +86,8 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws AuthenticationException
 	{
 		logger.info("Request to change password for UserId:" + userId);
-		//TODO if (sessionMgmtService.isValid(userId, sessionId)) -> nee to figure out how to get sessionId
+		//TODO if (sessionMgmtService.isValid(userId, sessionId)) -> need to figure out how to get sessionId
 
 		return passwordManagment.changePassword(userId, oldPassword, newPassword);
-	}
-	
-	/**
-	 * All credentials are encrypted and saved in the database so need to enrypt
-	 * when we query as well.
-	 * @param credential
-	 * @return
-	 * @throws CryptoException
-	 */
-	private Credential createEncryptedCredential(Credential credential) throws CryptoException
-	{
-		Pair<String, String> tuple = new CryptoCaller().ecrypt(credential.getLoginId(), credential.getPassword());
-
-		return new Credential(tuple.getValue0(), tuple.getValue1());
 	}
 }

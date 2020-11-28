@@ -103,7 +103,8 @@ public class PasswordManagement
 			throw new AuthenticationException(e.getMessage(), e);
 		}
 		
-		// Send EMail from the UserProfile using userId
+		
+		// Send EMail/SMS from the UserProfile using userId
 		// This will require first using loginId to lookup userId
 		// and using userId to get email
 		// Currently the loginId is the emailId : Should we just mandate the
@@ -139,7 +140,6 @@ public class PasswordManagement
 		positiveMatchingRules.add(new CharacterRule(EnglishCharacterData.Digit, 1));
 
 		// Rule 4: At least one special character 
-		// ]
 		CharacterData specialChars = new CharacterData()
 		{
 			public String getErrorCode()

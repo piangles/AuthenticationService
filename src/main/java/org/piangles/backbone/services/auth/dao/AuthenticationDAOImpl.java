@@ -33,7 +33,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	{
 		super.executeSP(CREATE_ENTRY_SP, 3, (sp)->{
 			sp.setString(1, userId);
-			sp.setString(2, credential.getLoginId());
+			sp.setString(2, credential.getId());
 			sp.setString(3, credential.getPassword());
 		});
 		return true;
@@ -44,7 +44,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	{
 		AuthenticationResponse response = null;
 		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 7, (sp)->{
-			sp.setString(1, credential.getLoginId());
+			sp.setString(1, credential.getId());
 			sp.setString(2, credential.getPassword());
 			sp.setInt(3, maxNumOfAttempts);
 			
