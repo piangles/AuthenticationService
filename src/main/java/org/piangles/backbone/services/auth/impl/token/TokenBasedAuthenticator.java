@@ -18,8 +18,9 @@ public class TokenBasedAuthenticator implements Authenticator
 	
 	private AuthenticationDAO authenticationDAO = null;
 	
-	public TokenBasedAuthenticator(Configuration config)
+	public TokenBasedAuthenticator(Configuration config) throws Exception
 	{
+		authenticationDAO = new AuthenticationDAOImpl();
 	}
 	
 	@Override
