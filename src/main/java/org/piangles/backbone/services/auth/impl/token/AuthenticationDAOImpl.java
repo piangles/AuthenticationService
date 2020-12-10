@@ -15,6 +15,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	private static final String CREATE_ENTRY_SP = "Backbone.CreateTokenBasedCredentialEntry";
 	private static final String IS_CREDENTIAL_VALID_SP = "Backbone.IsTokenBasedCredentialValid";
 	
+	private static final String USER_ID = "UserId";
 	private static final String IS_ACTIVE = "IsActive";
 
 	public AuthenticationDAOImpl() throws Exception
@@ -39,12 +40,14 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 3, (sp)->{
 			sp.setString(1, credential.getId());
 			sp.registerOutParameter(2, java.sql.Types.VARCHAR);
+			sp.registerOutParameter(3, java.sql.Types.BOOLEAN);
 		}, (rs, call)->{
 			AuthenticationResponse dbResponse = null;
+			String userId = call.getString(USER_ID);
 			boolean isActive = call.getBoolean(IS_ACTIVE);
 			if (isActive)
 			{
-				dbResponse = new AuthenticationResponse(credential.getId(), true);
+				dbResponse = new AuthenticationResponse(userId, true);
 			}
 			else
 			{
@@ -57,7 +60,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 				{
 					reason = FailureReason.AuthenticationFailed;
 				}
-				dbResponse = new AuthenticationResponse(reason, 3);	
+				dbResponse = new AuthenticationResponse(reason, 1);	
 			}
 			return dbResponse;
 		});
