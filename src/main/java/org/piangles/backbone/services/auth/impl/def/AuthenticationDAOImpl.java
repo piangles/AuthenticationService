@@ -1,6 +1,7 @@
 package org.piangles.backbone.services.auth.impl.def;
 
 import java.sql.Date;
+import java.sql.Types;
 
 import org.piangles.backbone.services.auth.AuthenticationResponse;
 import org.piangles.backbone.services.auth.Credential;
@@ -48,10 +49,10 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			sp.setString(2, credential.getPassword());
 			sp.setInt(3, maxNumOfAttempts);
 			
-			sp.registerOutParameter(4, java.sql.Types.VARCHAR);
-			sp.registerOutParameter(5, java.sql.Types.INTEGER);
-			sp.registerOutParameter(6, java.sql.Types.BOOLEAN);
-			sp.registerOutParameter(7, java.sql.Types.BOOLEAN);
+			sp.registerOutParameter(4, Types.VARCHAR);
+			sp.registerOutParameter(5, Types.INTEGER);
+			sp.registerOutParameter(6, Types.BOOLEAN);
+			sp.registerOutParameter(7, Types.BOOLEAN);
 		}, (rs, call)->{
 			AuthenticationResponse dbResponse = null;
 			String userId = call.getString(USER_ID);
