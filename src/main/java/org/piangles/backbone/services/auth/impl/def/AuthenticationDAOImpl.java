@@ -24,6 +24,11 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	private static final String IS_TOKEN = "IsToken";
 	private static final String IS_ACTIVE = "IsActive";
 
+	private static final int USER_ID_INDEX = 4;
+	private static final int NUM_ATTEMPTS_INDEX = 5;
+	private static final int IS_TOKEN_INDEX = 6;
+	private static final int IS_ACTIVE_INDEX = 7;
+
 	public AuthenticationDAOImpl() throws Exception
 	{
 		super.init(ResourceManager.getInstance().getRDBMSDataStore(new DefaultConfigProvider("AuthenticationService", COMPONENT_ID)));
@@ -55,10 +60,10 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			sp.registerOutParameter(7, Types.BOOLEAN);
 		}, (rs, call)->{
 			AuthenticationResponse dbResponse = null;
-			String userId = call.getString(USER_ID);
-			int numOfAttempts = call.getInt(NUM_ATTEMPTS);
-			boolean isToken = call.getBoolean(IS_TOKEN);
-			boolean isActive = call.getBoolean(IS_ACTIVE);
+			String userId = call.getString(USER_ID_INDEX);
+			int numOfAttempts = call.getInt(NUM_ATTEMPTS_INDEX);
+			boolean isToken = call.getBoolean(IS_TOKEN_INDEX);
+			boolean isActive = call.getBoolean(IS_ACTIVE_INDEX);
 			if (userId != null)
 			{
 				dbResponse = new AuthenticationResponse(userId, isToken);
