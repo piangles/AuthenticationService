@@ -20,10 +20,9 @@
 package org.piangles.backbone.services.auth;
 
 import org.piangles.backbone.services.Locator;
-import org.piangles.core.services.remoting.SessionAwareable;
-import org.piangles.core.services.remoting.SessionDetails;
+import org.piangles.core.test.AbstractServiceTestClient;
 
-public class AuthServiceTest extends Thread implements SessionAwareable
+public class AuthServiceTest extends AbstractServiceTestClient
 {
 	public static void main(String[] args) 
 	{
@@ -41,40 +40,28 @@ public class AuthServiceTest extends Thread implements SessionAwareable
 		System.exit(0);
 	}
 	
-	public void run()
-	{
-		try
-		{
-			AuthenticationService authService = Locator.getInstance().getAuthenticationService();
-
-			String loginId = "testuser@piangles.org";
-			String password = "Password@1";
-			String token = "\"6'Z'm4p";
-			Credential credential = new Credential(loginId, password);
-			
-			AuthenticationResponse response = null;
-			
-			response = authService.createAuthenticationEntry(AuthenticationType.Default, "08f9c02d", credential);
-			System.out.println("Result of createAuthenticationEntry:" + response);
-
-			response = authService.authenticate(AuthenticationType.Default, credential);
-			System.out.println(response);
-			
-//			authService.generateResetToken(loginId);
-
-//			AuthenticationResponse response = authService.validatePasswordStrength(token);
-//			System.out.println(response);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-	
 	@Override
-	public SessionDetails getSessionDetails()
+	public void runImpl() throws Exception
 	{
-		return new SessionDetails("LoggingService", "TODOSessionId");
+		AuthenticationService authService = Locator.getInstance().getAuthenticationService();
+
+		String loginId = "testuser@piangles.org";
+		String userId = "08f9c02d";
+		String password = "Password@1";
+		String token = "\"6'Z'm4p";
+		Credential credential = new Credential(loginId, password);
+		
+		AuthenticationResponse response = null;
+		
+		response = authService.createAuthenticationEntry(AuthenticationType.Default, userId, credential);
+		System.out.println("Result of createAuthenticationEntry:" + response);
+
+		response = authService.authenticate(AuthenticationType.Default, credential);
+		System.out.println(response);
+		
+		authService.generateResetToken(loginId);
+
+		response = authService.validatePasswordStrength(token);
+		System.out.println(response);
 	}
 }
