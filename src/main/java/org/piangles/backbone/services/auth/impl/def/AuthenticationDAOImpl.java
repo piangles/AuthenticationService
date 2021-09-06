@@ -109,7 +109,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws DAOException
 	{
 		AuthenticationResponse response = null;
-		response = super.executeSPQuery(SET_CREDENTIAL_SP, 6, (sp) -> {
+		response = super.executeSPQuery(SET_CREDENTIAL_SP, 5, (sp) -> {
 			sp.setString(1, userId);
 			sp.setString(2, oldPassword);
 			sp.setString(3, newPassword);
@@ -125,7 +125,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	public AuthenticationResponse persistGeneratedToken(String userId, String token, Date tokenExpirationTime) throws DAOException
 	{
 		AuthenticationResponse response = null;
-		response = super.executeSPQuery(SET_CREDENTIAL_SP, 6, (sp) -> {
+		response = super.executeSPQuery(SET_CREDENTIAL_SP, 5, (sp) -> {
 			sp.setString(1, userId);
 			sp.setString(2, null);
 			sp.setString(3, null);
