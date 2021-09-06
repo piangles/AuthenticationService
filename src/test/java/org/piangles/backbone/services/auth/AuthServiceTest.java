@@ -53,7 +53,7 @@ public class AuthServiceTest extends AbstractServiceTestClient
 		
 		AuthenticationResponse response = null;
 		
-		response = authService.createAuthenticationEntry(AuthenticationType.Default, userId, credential);
+		response = authService.createAuthenticationEntry(AuthenticationType.Default, credential);
 		System.out.println("Result of createAuthenticationEntry:" + response);
 
 		response = authService.authenticate(AuthenticationType.Default, credential);

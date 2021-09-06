@@ -20,11 +20,8 @@
 package org.piangles.backbone.services.auth.impl.def;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
-import org.javatuples.Pair;
 import org.passay.CharacterData;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
@@ -39,22 +36,17 @@ import org.piangles.backbone.services.Locator;
 import org.piangles.backbone.services.auth.AuthenticationException;
 import org.piangles.backbone.services.auth.AuthenticationResponse;
 import org.piangles.backbone.services.auth.FailureReason;
-import org.piangles.backbone.services.crypto.CryptoException;
 import org.piangles.backbone.services.logging.LoggingService;
-import org.piangles.core.dao.DAOException;
 
 public class PasswordManagement
 {
 	private static final String ALLOWED_SPL_CHARACTERS = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 	private LoggingService logger = Locator.getInstance().getLoggingService();
 
-	private AuthenticationDAO authenticationDAO = null;
 	private List<Rule> passwordRules = null;
 
-	public PasswordManagement(AuthenticationDAO authenticationDAO)
+	public PasswordManagement()
 	{
-		this.authenticationDAO = authenticationDAO;
-
 		passwordRules = new ArrayList<>();
 		passwordRules.add(compileLengthRule());
 		passwordRules.addAll(compilePositiveMatchingRules());
@@ -83,55 +75,10 @@ public class PasswordManagement
 		return response;
 	}
 
-	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws AuthenticationException
+	public String generateResetToken(String loginId) throws AuthenticationException
 	{
-		AuthenticationResponse response = null;
-		try
-		{
-			validatePasswordStrength(newPassword);
-			Pair<String, String> tuple = new CryptoCaller().ecrypt(oldPassword, newPassword);
-			String encryptedOldPassword = tuple.getValue0();
-			String encryptedNewPassword = tuple.getValue1();
-			response = authenticationDAO.changePassword(userId, encryptedOldPassword, encryptedNewPassword);
-		}
-		catch (CryptoException | DAOException e)
-		{
-			logger.error("Exception updating password:" + e.getMessage(), e);
-			throw new AuthenticationException(e.getMessage(), e);
-		}
-		return response;
-	}
-	
-	public boolean generateResetToken(String loginId) throws AuthenticationException
-	{
-		PasswordGenerator passwordGenerator = new PasswordGenerator();
-		// Generate a token
-		String token = passwordGenerator.generatePassword(compileLengthRule().getMinimumLength(), compilePositiveMatchingRules());
-		// Persist in the DAO
-		Calendar c = Calendar.getInstance();
-		c.setTime(new Date());
-		c.add(Calendar.DATE, 1);
-		try
-		{
-			Pair<String, String> tuple = new CryptoCaller().ecrypt(loginId, token);
-			String encryptedLoginId = tuple.getValue0();
-			String encryptedToken = tuple.getValue1();
-			authenticationDAO.persistGeneratedToken(encryptedLoginId, encryptedToken, new java.sql.Date(c.getTime().toInstant().toEpochMilli()));
-		}
-		catch (CryptoException | DAOException e)
-		{
-			logger.error("Exception generating reset token:" + e.getMessage(), e);
-			throw new AuthenticationException(e.getMessage(), e);
-		}
-		
-		
-		// Send EMail/SMS from the UserProfile using userId
-		// This will require first using loginId to lookup userId
-		// and using userId to get email
-		// Currently the loginId is the emailId : Should we just mandate the
-		// loginId is the emailId? Makes life easier for everyone.
-		// Then no lookup is required.
-		return false;
+		// Generate a token based on password rules.
+		return new PasswordGenerator().generatePassword(compileLengthRule().getMinimumLength(), compilePositiveMatchingRules());
 	}
 
 	/**

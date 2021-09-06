@@ -25,80 +25,74 @@ import java.sql.Types;
 import org.piangles.backbone.services.auth.AuthenticationResponse;
 import org.piangles.backbone.services.auth.Credential;
 import org.piangles.backbone.services.auth.FailureReason;
-import org.piangles.backbone.services.config.DefaultConfigProvider;
 import org.piangles.core.dao.DAOException;
 import org.piangles.core.dao.rdbms.AbstractDAO;
 import org.piangles.core.resources.ResourceManager;
+import org.piangles.core.util.abstractions.ConfigProvider;
 
 public class AuthenticationDAOImpl extends AbstractDAO implements AuthenticationDAO
 {
-	private static final String COMPONENT_ID = "2f07e92e-8edf-4fed-897c-2df2bd2ae72d";
-
-	private static final String CREATE_ENTRY_SP = "Backbone.CreateCredentialEntry";
-	private static final String IS_CREDENTIAL_VALID_SP = "Backbone.IsCredentialValid";
-	private static final String SET_CREDENTIAL_SP = "Backbone.SetCredential";
+	private static final String CREATE_ENTRY_SP = "auth.create_credential_entry";
+	private static final String IS_CREDENTIAL_VALID_SP = "auth.is_credential_valid";
+	private static final String SET_CREDENTIAL_SP = "auth.set_credential";
 	
-	private static final String USER_ID = "UserId";
-	private static final String NUM_ATTEMPTS = "NoOfAttempts";
-	private static final String IS_TOKEN = "IsToken";
-	private static final String IS_ACTIVE = "IsActive";
+	private static final String NUM_ATTEMPTS = "no_of_attempts";
+	private static final String IS_TOKEN = "is_token";
+	private static final String IS_ACTIVE = "is_active";
 
-	private static final int USER_ID_INDEX = 4;
-	private static final int NUM_ATTEMPTS_INDEX = 5;
-	private static final int IS_TOKEN_INDEX = 6;
-	private static final int IS_ACTIVE_INDEX = 7;
+	private static final int NUM_ATTEMPTS_INDEX = 4;
+	private static final int IS_TOKEN_INDEX = 5;
+	private static final int IS_ACTIVE_INDEX = 6;
 
-	public AuthenticationDAOImpl() throws Exception
+	public AuthenticationDAOImpl(ConfigProvider cp) throws Exception
 	{
-		super.init(ResourceManager.getInstance().getRDBMSDataStore(new DefaultConfigProvider("AuthenticationService", COMPONENT_ID)));
+		super.init(ResourceManager.getInstance().getRDBMSDataStore(cp));
 	}
 
 	@Override
-	public boolean createAuthenticationEntry(String userId, Credential credential) throws DAOException
+	public AuthenticationResponse createAuthenticationEntry(Credential credential) throws DAOException
 	{
-		super.executeSP(CREATE_ENTRY_SP, 3, (sp)->{
-			sp.setString(1, userId);
-			sp.setString(2, credential.getId());
-			sp.setString(3, credential.getPassword());
+		super.executeSP(CREATE_ENTRY_SP, 2, (sp)->{
+			sp.setString(1, credential.getId());
+			sp.setString(2, credential.getPassword());
 		});
-		return true;
+		return new AuthenticationResponse(true);
 	}
 
 	@Override
 	public AuthenticationResponse authenticate(Credential credential, int maxNumOfAttempts) throws DAOException
 	{
 		AuthenticationResponse response = null;
-		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 7, (sp)->{
+		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 6, (sp)->{
 			sp.setString(1, credential.getId());
 			sp.setString(2, credential.getPassword());
 			sp.setInt(3, maxNumOfAttempts);
 			
-			sp.registerOutParameter(4, Types.VARCHAR);
-			sp.registerOutParameter(5, Types.INTEGER);
+			sp.registerOutParameter(4, Types.INTEGER);
+			sp.registerOutParameter(5, Types.BOOLEAN);
 			sp.registerOutParameter(6, Types.BOOLEAN);
-			sp.registerOutParameter(7, Types.BOOLEAN);
 		}, (rs, call)->{
 			AuthenticationResponse dbResponse = null;
-			String userId = call.getString(USER_ID_INDEX);
 			int numOfAttempts = call.getInt(NUM_ATTEMPTS_INDEX);
 			boolean isToken = call.getBoolean(IS_TOKEN_INDEX);
 			boolean isActive = call.getBoolean(IS_ACTIVE_INDEX);
-			if (userId != null)
+			
+			if (numOfAttempts == 1)//=>It was successful attempt
 			{
-				dbResponse = new AuthenticationResponse(userId, isToken);
+				dbResponse = new AuthenticationResponse(credential.getId(), isToken);
 			}
 			else
 			{
-				FailureReason reason = null;
 				int noOfAttemptsRemaining = maxNumOfAttempts - numOfAttempts + 1;
-				if (noOfAttemptsRemaining == 0)
-				{
-					reason = FailureReason.TooManyAttempts;
-				}
-				else if (!isActive)
+				FailureReason reason = null;
+				if (!isActive)
 				{
 					reason = FailureReason.AccountDisabled;
 					noOfAttemptsRemaining = 0;
+				}
+				else if (noOfAttemptsRemaining == 0)
+				{
+					reason = FailureReason.TooManyAttempts;
 				}
 				else
 				{
@@ -114,27 +108,32 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	@Override
 	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws DAOException
 	{
-		super.executeSP(SET_CREDENTIAL_SP, 6, (sp) -> {
+		AuthenticationResponse response = null;
+		response = super.executeSPQuery(SET_CREDENTIAL_SP, 6, (sp) -> {
 			sp.setString(1, userId);
-			sp.setString(2, null);
-			sp.setString(3, oldPassword);
-			sp.setString(4, newPassword);
-			sp.setString(5, null);
-			sp.setDate(6, null);
+			sp.setString(2, oldPassword);
+			sp.setString(3, newPassword);
+			sp.setString(4, null);
+			sp.setDate(5, null);
+		}, (rs, call)->{
+			return new AuthenticationResponse(rs.getBoolean(1));
 		});
-		return new AuthenticationResponse(userId, true);
+		return response;
 	}
 
 	@Override
-	public void persistGeneratedToken(String loginId, String token, Date tokenExpirationTime) throws DAOException
+	public AuthenticationResponse persistGeneratedToken(String userId, String token, Date tokenExpirationTime) throws DAOException
 	{
-		super.executeSP(SET_CREDENTIAL_SP, 6, (sp) -> {
-			sp.setString(1, null);
-			sp.setString(2, loginId);
+		AuthenticationResponse response = null;
+		response = super.executeSPQuery(SET_CREDENTIAL_SP, 6, (sp) -> {
+			sp.setString(1, userId);
+			sp.setString(2, null);
 			sp.setString(3, null);
-			sp.setString(4, null);
-			sp.setString(5, token);
-			sp.setDate(6, tokenExpirationTime);
+			sp.setString(4, token);
+			sp.setDate(5, tokenExpirationTime);
+		}, (rs, call)->{
+			return new AuthenticationResponse(rs.getBoolean(1));
 		});
+		return response;
 	}
 }

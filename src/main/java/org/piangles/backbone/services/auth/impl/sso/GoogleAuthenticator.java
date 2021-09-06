@@ -24,21 +24,18 @@ import org.piangles.backbone.services.auth.AuthenticationException;
 import org.piangles.backbone.services.auth.AuthenticationResponse;
 import org.piangles.backbone.services.auth.Authenticator;
 import org.piangles.backbone.services.auth.Credential;
-import org.piangles.backbone.services.config.Configuration;
 import org.piangles.backbone.services.logging.LoggingService;
 
 public class GoogleAuthenticator implements Authenticator 
 {
-	private static final String UNSUPPORTED = "This endpoint is not supported for this Authenticator.";
-
 	private LoggingService logger = Locator.getInstance().getLoggingService();
 	
-	public GoogleAuthenticator(Configuration config)
+	public GoogleAuthenticator()
 	{
 	}
 	
 	@Override
-	public AuthenticationResponse createAuthenticationEntry(String userId, Credential credential) throws AuthenticationException
+	public AuthenticationResponse createAuthenticationEntry(Credential credential) throws AuthenticationException
 	{
 		throw new AuthenticationException(UNSUPPORTED);
 	}
@@ -52,7 +49,7 @@ public class GoogleAuthenticator implements Authenticator
 
 
 	@Override
-	public boolean generateResetToken(String loginId) throws AuthenticationException
+	public AuthenticationResponse generateResetToken(String loginId) throws AuthenticationException
 	{
 		throw new AuthenticationException(UNSUPPORTED);
 	}

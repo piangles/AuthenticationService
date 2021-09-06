@@ -22,37 +22,55 @@ package org.piangles.backbone.services.auth.impl.token;
 import org.piangles.backbone.services.Locator;
 import org.piangles.backbone.services.auth.AuthenticationException;
 import org.piangles.backbone.services.auth.AuthenticationResponse;
+import org.piangles.backbone.services.auth.AuthenticationService;
 import org.piangles.backbone.services.auth.Authenticator;
 import org.piangles.backbone.services.auth.Credential;
 import org.piangles.backbone.services.auth.FailureReason;
-import org.piangles.backbone.services.config.Configuration;
+import org.piangles.backbone.services.config.DefaultConfigProvider;
 import org.piangles.backbone.services.logging.LoggingService;
+import org.piangles.backbone.services.profile.BasicUserProfile;
+import org.piangles.backbone.services.profile.UserProfileException;
+import org.piangles.backbone.services.profile.UserProfileService;
 import org.piangles.core.dao.DAOException;
+import org.piangles.core.util.abstractions.ConfigProvider;
 
 public class TokenBasedAuthenticator implements Authenticator 
 {
-	private static final String UNSUPPORTED = "This endpoint is not supported for this Authenticator.";
+	private static final String COMPONENT_ID = "2f07e92e-8edf-4fed-897c-2df2bd2ae72d";
 	
 	private LoggingService logger = Locator.getInstance().getLoggingService();
+	private UserProfileService profileService = Locator.getInstance().getUserProfileService();
 	
 	private AuthenticationDAO authenticationDAO = null;
 	
-	public TokenBasedAuthenticator(Configuration config) throws Exception
+	public TokenBasedAuthenticator() throws Exception
 	{
-		authenticationDAO = new AuthenticationDAOImpl();
+		ConfigProvider cp = new DefaultConfigProvider(AuthenticationService.NAME, COMPONENT_ID);
+		authenticationDAO = new AuthenticationDAOImpl(cp);
 	}
 	
 	@Override
-	public AuthenticationResponse createAuthenticationEntry(String userId, Credential credential) throws AuthenticationException
+	public AuthenticationResponse createAuthenticationEntry(Credential credential) throws AuthenticationException
 	{
 		AuthenticationResponse response = null; 
-		logger.info("Creating an authentication entry for UserId: " + userId);
+		String userId = null;
 		try
 		{
-			boolean result = authenticationDAO.createAuthenticationEntry(userId, credential);
-			response = new AuthenticationResponse(userId, result);
+			userId = profileService.searchProfile(new BasicUserProfile(null, null, credential.getId(), null));
+			if (userId == null)
+			{
+				logger.warn("Cannot find UserId for Id: " + credential.getId());
+				response = new AuthenticationResponse(FailureReason.AccountDoesNotExist, 0);
+			}
+			else
+			{
+				logger.info("Creating an authentication entry for UserId: " + userId);
+				
+				boolean result = authenticationDAO.createAuthenticationEntry(userId, credential);
+				response = new AuthenticationResponse(userId, result);
+			}
 		}
-		catch (DAOException e)
+		catch (UserProfileException | DAOException e)
 		{
 			String message = "Unable to create authentication entry for User";
 			logger.error(message + "Id: " + userId, e);
@@ -86,7 +104,7 @@ public class TokenBasedAuthenticator implements Authenticator
 
 
 	@Override
-	public boolean generateResetToken(String loginId) throws AuthenticationException
+	public AuthenticationResponse generateResetToken(String loginId) throws AuthenticationException
 	{
 		throw new AuthenticationException(UNSUPPORTED);
 	}

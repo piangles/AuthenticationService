@@ -22,24 +22,22 @@ package org.piangles.backbone.services.auth.impl.token;
 import org.piangles.backbone.services.auth.AuthenticationResponse;
 import org.piangles.backbone.services.auth.Credential;
 import org.piangles.backbone.services.auth.FailureReason;
-import org.piangles.backbone.services.config.DefaultConfigProvider;
 import org.piangles.core.dao.DAOException;
 import org.piangles.core.dao.rdbms.AbstractDAO;
 import org.piangles.core.resources.ResourceManager;
+import org.piangles.core.util.abstractions.ConfigProvider;
 
 public class AuthenticationDAOImpl extends AbstractDAO implements AuthenticationDAO
 {
-	private static final String COMPONENT_ID = "2f07e92e-8edf-4fed-897c-2df2bd2ae72d";
-
 	private static final String CREATE_ENTRY_SP = "Backbone.CreateTokenBasedCredentialEntry";
 	private static final String IS_CREDENTIAL_VALID_SP = "Backbone.IsTokenBasedCredentialValid";
 	
 	private static final String USER_ID = "UserId";
 	private static final String IS_ACTIVE = "IsActive";
 
-	public AuthenticationDAOImpl() throws Exception
+	public AuthenticationDAOImpl(ConfigProvider cp) throws Exception
 	{
-		super.init(ResourceManager.getInstance().getRDBMSDataStore(new DefaultConfigProvider("AuthenticationService", COMPONENT_ID)));
+		super.init(ResourceManager.getInstance().getRDBMSDataStore(cp));
 	}
 
 	@Override

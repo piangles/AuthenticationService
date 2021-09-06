@@ -22,34 +22,26 @@ package org.piangles.backbone.services.auth;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.piangles.backbone.services.Locator;
 import org.piangles.backbone.services.auth.impl.def.DefaultAuthenticator;
 import org.piangles.backbone.services.auth.impl.sso.GoogleAuthenticator;
 import org.piangles.backbone.services.auth.impl.token.TokenBasedAuthenticator;
-import org.piangles.backbone.services.config.ConfigService;
-import org.piangles.backbone.services.config.Configuration;
 
 public final class AuthenticationServiceImpl implements AuthenticationService
 {
-	private static final String COMPONENT_ID = "2f07e92e-8edf-4fed-897c-2df2bd2ae72d";
-	
-	private ConfigService configService = Locator.getInstance().getConfigService();
-
 	private Map<AuthenticationType, Authenticator> authenticatorMap;
 	
 	public AuthenticationServiceImpl() throws Exception
 	{
-		Configuration config = configService.getConfiguration(COMPONENT_ID);
 		authenticatorMap = new HashMap<AuthenticationType, Authenticator>();
-		authenticatorMap.put(AuthenticationType.Default, new DefaultAuthenticator(config));
-		authenticatorMap.put(AuthenticationType.TokenBased, new TokenBasedAuthenticator(config));
-		authenticatorMap.put(AuthenticationType.Google, new GoogleAuthenticator(config));
+		authenticatorMap.put(AuthenticationType.Default, new DefaultAuthenticator());
+		authenticatorMap.put(AuthenticationType.TokenBased, new TokenBasedAuthenticator());
+		authenticatorMap.put(AuthenticationType.Google, new GoogleAuthenticator());
 	}
 
 	@Override
-	public AuthenticationResponse createAuthenticationEntry(AuthenticationType type, String userId, Credential credential) throws AuthenticationException
+	public AuthenticationResponse createAuthenticationEntry(AuthenticationType type, Credential credential) throws AuthenticationException
 	{
-		return authenticatorMap.get(type).createAuthenticationEntry(userId, credential);
+		return authenticatorMap.get(type).createAuthenticationEntry(credential);
 	}
 
 	@Override
@@ -59,7 +51,7 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	}
 
 	@Override
-	public boolean generateResetToken(String loginId) throws AuthenticationException
+	public AuthenticationResponse generateResetToken(String loginId) throws AuthenticationException
 	{
 		return authenticatorMap.get(AuthenticationType.Default).generateResetToken(loginId);
 	}
