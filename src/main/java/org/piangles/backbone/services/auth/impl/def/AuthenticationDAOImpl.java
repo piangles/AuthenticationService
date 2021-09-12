@@ -36,10 +36,6 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	private static final String IS_CREDENTIAL_VALID_SP = "auth.is_credential_valid";
 	private static final String SET_CREDENTIAL_SP = "auth.set_credential";
 	
-	private static final String NUM_ATTEMPTS = "no_of_attempts";
-	private static final String IS_TOKEN = "is_token";
-	private static final String IS_ACTIVE = "is_active";
-
 	private static final int NUM_ATTEMPTS_INDEX = 4;
 	private static final int IS_TOKEN_INDEX = 5;
 	private static final int IS_ACTIVE_INDEX = 6;
@@ -132,7 +128,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			sp.setString(4, token);
 			sp.setDate(5, tokenExpirationTime);
 		}, (rs, call)->{
-			return new AuthenticationResponse(rs.getBoolean(1));
+			return new AuthenticationResponse(token);
 		});
 		return response;
 	}
