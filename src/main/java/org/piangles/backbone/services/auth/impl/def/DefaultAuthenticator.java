@@ -77,25 +77,16 @@ public class DefaultAuthenticator implements Authenticator
 		logger.info("Request to create Authentication Entry for a user.");
 		try
 		{
-			userId = profileService.searchProfile(new BasicUserProfile(null, null, credential.getId(), null));
-			if (userId == null)
+			response = passwordManagment.validatePasswordStrength(credential.getPassword());
+			if (response.isRequestSuccessful())
 			{
-				logger.warn("Cannot find UserId for Id: " + credential.getId());
-				response = new AuthenticationResponse(FailureReason.AccountDoesNotExist, USER_ID_NOT_FOUND_ATTEMPTS_REMAINING);
-			}
-			else
-			{
-				response = passwordManagment.validatePasswordStrength(credential.getPassword());
-				if (response.isRequestSuccessful())
-				{
-					logger.info("Creating an authentication entry for UserId: " + userId);
-					
-					Credential finalCredential = new Credential(userId, credential.getPassword());
-					response = authenticationDAO.createAuthenticationEntry(finalCredential);
-				}
+				logger.info("Creating an authentication entry for UserId: " + userId);
+				
+				Credential finalCredential = new Credential(userId, credential.getPassword());
+				response = authenticationDAO.createAuthenticationEntry(finalCredential);
 			}
 		}
-		catch (UserProfileException | DAOException e)
+		catch (DAOException e)
 		{
 			String message = "Unable to create authentication entry for User.";
 			logger.error(message, e);
