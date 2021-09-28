@@ -73,7 +73,8 @@ public class DefaultAuthenticator implements Authenticator
 	public AuthenticationResponse createAuthenticationEntry(Credential credential) throws AuthenticationException
 	{
 		AuthenticationResponse response = null; 
-		String userId = null;
+		
+		String userId = credential.getId();
 		logger.info("Request to create Authentication Entry for a user.");
 		try
 		{
