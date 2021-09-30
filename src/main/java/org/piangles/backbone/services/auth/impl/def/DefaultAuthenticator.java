@@ -126,7 +126,7 @@ public class DefaultAuthenticator implements Authenticator
 			 * Consume & log the errors and return just the response for security reasons.
 			 */
 			logger.error("Unable to authenticate user because of: " + e.getMessage(), e);
-			response = new AuthenticationResponse(FailureReason.InternalError, null);
+			response = new AuthenticationResponse(FailureReason.InternalError);
 		}
 		return response;
 	}

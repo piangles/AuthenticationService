@@ -67,9 +67,13 @@ public class PasswordManagement
 		}
 		else
 		{
-			List<String> failureReasons = validator.getMessages(result);
-			logger.info("Specified password does not meet password strength rules: " + failureReasons);
-			response = new AuthenticationResponse(FailureReason.PasswordDoesNotMeetStrength, failureReasons);
+			List<String> failureMessages = validator.getMessages(result);
+			logger.info("Specified password does not meet password strength rules: " + failureMessages);
+			response = new AuthenticationResponse(FailureReason.PasswordDoesNotMeetStrength);
+			for (String failureMessage : failureMessages)
+			{
+				response.addFailureMessage(failureMessage);
+			}
 		}
 
 		return response;
