@@ -126,7 +126,7 @@ public class DefaultAuthenticator implements Authenticator
 			 * Consume & log the errors and return just the response for security reasons.
 			 */
 			logger.error("Unable to authenticate user because of: " + e.getMessage(), e);
-			response = new AuthenticationResponse(FailureReason.InternalError);
+			response = new AuthenticationResponse(FailureReason.InternalError, 0);
 		}
 		return response;
 	}
@@ -137,6 +137,7 @@ public class DefaultAuthenticator implements Authenticator
 		AuthenticationResponse response = null;
 		String userId = null;
 		logger.info("Request to generateResetToken for:" + loginId);
+		//TODO if (sessionMgmtService.isValid(userId, sessionId)) -> need to figure out how to get sessionId
 		try
 		{
 			userId = profileService.searchProfile(new BasicUserProfile(null, null, loginId, null));

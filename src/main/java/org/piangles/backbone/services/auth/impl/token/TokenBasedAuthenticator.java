@@ -96,7 +96,7 @@ public class TokenBasedAuthenticator implements Authenticator
 			 * Consume & log the errors and return just the response for security reasons.
 			 */
 			logger.error("Unable to authenticate user because of: " + e.getMessage(), e);
-			response = new AuthenticationResponse(FailureReason.InternalError);
+			response = new AuthenticationResponse(FailureReason.InternalError, 0);
 		}
 		return response;
 
