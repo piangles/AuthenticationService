@@ -39,6 +39,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	private static final int NUM_ATTEMPTS_INDEX = 4;
 	private static final int IS_TOKEN_INDEX = 5;
 	private static final int IS_ACTIVE_INDEX = 6;
+	private static final int LAST_LOGGED_IN_TS_INDEX = 7;
 
 	public AuthenticationDAOImpl(ConfigProvider cp) throws Exception
 	{
@@ -59,7 +60,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	public AuthenticationResponse authenticate(Credential credential, int maxNumOfAttempts) throws DAOException
 	{
 		AuthenticationResponse response = null;
-		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 6, (sp)->{
+		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 7, (sp)->{
 			sp.setString(1, credential.getId());
 			sp.setString(2, credential.getPassword());
 			sp.setInt(3, maxNumOfAttempts);
@@ -67,15 +68,17 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			sp.registerOutParameter(4, Types.INTEGER);
 			sp.registerOutParameter(5, Types.BOOLEAN);
 			sp.registerOutParameter(6, Types.BOOLEAN);
+			sp.registerOutParameter(7, Types.TIMESTAMP);
 		}, (rs, call)->{
 			AuthenticationResponse dbResponse = null;
 			int numOfAttempts = call.getInt(NUM_ATTEMPTS_INDEX);
 			boolean isToken = call.getBoolean(IS_TOKEN_INDEX);
 			boolean isActive = call.getBoolean(IS_ACTIVE_INDEX);
+			long lastLoggedInTimestamp = call.getTimestamp(LAST_LOGGED_IN_TS_INDEX).getTime();
 			
 			if (numOfAttempts == 1)//=>It was successful attempt
 			{
-				dbResponse = new AuthenticationResponse(credential.getId(), isToken);
+				dbResponse = new AuthenticationResponse(credential.getId(), isToken, lastLoggedInTimestamp);
 			}
 			else
 			{
