@@ -20,6 +20,7 @@
 package org.piangles.backbone.services.auth.impl.def;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.sql.Types;
 
 import org.piangles.backbone.services.auth.AuthenticationResponse;
@@ -74,7 +75,12 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			int numOfAttempts = call.getInt(NUM_ATTEMPTS_INDEX);
 			boolean isToken = call.getBoolean(IS_TOKEN_INDEX);
 			boolean isActive = call.getBoolean(IS_ACTIVE_INDEX);
-			long lastLoggedInTimestamp = call.getTimestamp(LAST_LOGGED_IN_TS_INDEX).getTime();
+			long lastLoggedInTimestamp = 0L;
+			Timestamp lastLoggedinTS = call.getTimestamp(LAST_LOGGED_IN_TS_INDEX);
+			if (lastLoggedinTS != null)
+			{
+				lastLoggedInTimestamp = lastLoggedinTS.getTime();
+			}
 			
 			if (numOfAttempts == 1)//=>It was successful attempt
 			{
