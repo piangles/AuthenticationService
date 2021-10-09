@@ -41,6 +41,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	private static final int IS_TOKEN_INDEX = 5;
 	private static final int IS_ACTIVE_INDEX = 6;
 	private static final int LAST_LOGGED_IN_TS_INDEX = 7;
+	private static final int ACCOUNT_EXIST_INDEX = 8;
 
 	public AuthenticationDAOImpl(ConfigProvider cp) throws Exception
 	{
@@ -61,7 +62,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 	public AuthenticationResponse authenticate(Credential credential, int maxNumOfAttempts) throws DAOException
 	{
 		AuthenticationResponse response = null;
-		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 7, (sp)->{
+		response = super.executeSPQuery(IS_CREDENTIAL_VALID_SP, 8, (sp)->{
 			sp.setString(1, credential.getId());
 			sp.setString(2, credential.getPassword());
 			sp.setInt(3, maxNumOfAttempts);
@@ -70,6 +71,7 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			sp.registerOutParameter(5, Types.BOOLEAN);
 			sp.registerOutParameter(6, Types.BOOLEAN);
 			sp.registerOutParameter(7, Types.TIMESTAMP);
+			sp.registerOutParameter(8, Types.BOOLEAN);
 		}, (rs, call)->{
 			AuthenticationResponse dbResponse = null;
 			int numOfAttempts = call.getInt(NUM_ATTEMPTS_INDEX);
@@ -81,8 +83,9 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			{
 				lastLoggedInTimestamp = lastLoggedinTS.getTime();
 			}
+			boolean accountExists = call.getBoolean(ACCOUNT_EXIST_INDEX);
 			
-			if (numOfAttempts == 1)//=>It was successful attempt
+			if (accountExists && numOfAttempts == 1)//=>It was successful attempt
 			{
 				dbResponse = new AuthenticationResponse(credential.getId(), isToken, lastLoggedInTimestamp);
 			}
@@ -90,7 +93,12 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			{
 				int noOfAttemptsRemaining = maxNumOfAttempts - numOfAttempts + 1;
 				FailureReason reason = null;
-				if (!isActive)
+				if (!accountExists)
+				{
+					reason = FailureReason.AccountDoesNotExist;
+					noOfAttemptsRemaining = 0;
+				}
+				else if (!isActive)
 				{
 					reason = FailureReason.AccountDisabled;
 					noOfAttemptsRemaining = 0;
