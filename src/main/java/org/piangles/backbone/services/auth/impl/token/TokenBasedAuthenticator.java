@@ -67,7 +67,8 @@ public class TokenBasedAuthenticator implements Authenticator
 				logger.info("Creating an authentication entry for UserId: " + userId);
 				
 				boolean result = authenticationDAO.createAuthenticationEntry(userId, credential);
-				response = new AuthenticationResponse(userId, result);
+				//TODO Need to retrieve lastLoggedInTime from DB
+				response = new AuthenticationResponse(userId, result, System.currentTimeMillis());
 			}
 		}
 		catch (UserProfileException | DAOException e)

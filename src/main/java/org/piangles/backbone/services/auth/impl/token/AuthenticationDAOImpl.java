@@ -64,7 +64,8 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			boolean isActive = call.getBoolean(IS_ACTIVE);
 			if (isActive)
 			{
-				dbResponse = new AuthenticationResponse(userId, true);
+				//TODO Need to retrieve lastLoggedInTime from DB
+				dbResponse = new AuthenticationResponse(userId, true, System.currentTimeMillis());
 			}
 			else
 			{
