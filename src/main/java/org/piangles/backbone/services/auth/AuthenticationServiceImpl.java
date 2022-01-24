@@ -39,6 +39,12 @@ public final class AuthenticationServiceImpl implements AuthenticationService
 	}
 
 	@Override
+	public boolean doesAuthenticationEntryExist(String userId) throws AuthenticationException
+	{
+		return authenticatorMap.get(AuthenticationType.Default).doesAuthenticationEntryExist(userId);
+	}
+	
+	@Override
 	public AuthenticationResponse createAuthenticationEntry(AuthenticationType type, Credential credential) throws AuthenticationException
 	{
 		return authenticatorMap.get(type).createAuthenticationEntry(credential);

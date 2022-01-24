@@ -70,6 +70,25 @@ public class DefaultAuthenticator implements Authenticator
 	}
 	
 	@Override
+	public boolean doesAuthenticationEntryExist(String userId) throws AuthenticationException
+	{
+		boolean exists = false;
+		logger.info("Request to check for AuthenticationEntryExist for UserId:" + userId);
+		//TODO if (sessionMgmtService.isValid(userId, sessionId)) -> need to figure out how to get sessionId
+		try
+		{
+			exists = authenticationDAO.doesAuthenticationEntryExist(userId);
+		}
+		catch (DAOException e)
+		{
+			String message = "Unable to doesAuthenticationEntryExist for UserId: " + userId;
+			logger.error(message + ". Reason: " + e.getMessage(), e);
+			throw new AuthenticationException(message);
+		}
+		return exists;
+	}
+
+	@Override
 	public AuthenticationResponse createAuthenticationEntry(Credential credential) throws AuthenticationException
 	{
 		AuthenticationResponse response = null; 

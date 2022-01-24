@@ -34,6 +34,7 @@ import org.piangles.core.util.abstractions.ConfigProvider;
 public class AuthenticationDAOImpl extends AbstractDAO implements AuthenticationDAO
 {
 	private static final String CREATE_ENTRY_SP = "auth.create_credential_entry";
+	private static final String IS_CREDENTIAL_PRESENT_SP = "auth.is_credential_present";
 	private static final String IS_CREDENTIAL_VALID_SP = "auth.is_credential_valid";
 	private static final String SET_CREDENTIAL_SP = "auth.set_credential";
 	
@@ -48,6 +49,20 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 		super.init(ResourceManager.getInstance().getRDBMSDataStore(cp));
 	}
 
+	@Override
+	public boolean doesAuthenticationEntryExist(String userId) throws DAOException
+	{
+		boolean exists = false;
+		
+		exists = super.executeSPQuery(IS_CREDENTIAL_PRESENT_SP, 1, (sp) -> {
+			sp.setString(1, userId);
+		}, (rs, call)->{
+			return rs.getBoolean(1);
+		});
+		
+		return exists;
+	}
+	
 	@Override
 	public AuthenticationResponse createAuthenticationEntry(Credential credential) throws DAOException
 	{

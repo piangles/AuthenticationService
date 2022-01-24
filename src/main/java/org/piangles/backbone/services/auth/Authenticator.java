@@ -23,6 +23,7 @@ public interface Authenticator
 {
 	public static final String UNSUPPORTED = "This endpoint is not supported for this Authenticator.";
 
+	public boolean doesAuthenticationEntryExist(String userId) throws AuthenticationException;
 	public AuthenticationResponse createAuthenticationEntry(Credential credential) throws AuthenticationException;
 	public AuthenticationResponse authenticate(Credential credential) throws AuthenticationException;
 	public AuthenticationResponse generateResetToken(String loginId) throws AuthenticationException;

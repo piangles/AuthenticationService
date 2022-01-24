@@ -27,6 +27,7 @@ import org.piangles.core.dao.DAOException;
 
 public interface AuthenticationDAO
 {
+	public boolean doesAuthenticationEntryExist(String userId) throws DAOException;
 	public AuthenticationResponse createAuthenticationEntry(Credential credential) throws DAOException;
 	public AuthenticationResponse authenticate(Credential credential, int maxNumberOfAttempts) throws DAOException;
 	public AuthenticationResponse changePassword(String userId, String oldPassword, String newPassword) throws DAOException;

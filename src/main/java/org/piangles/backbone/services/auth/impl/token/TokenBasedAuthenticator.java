@@ -50,6 +50,12 @@ public class TokenBasedAuthenticator implements Authenticator
 	}
 	
 	@Override
+	public boolean doesAuthenticationEntryExist(String userId) throws AuthenticationException
+	{
+		throw new AuthenticationException(UNSUPPORTED);
+	}
+
+	@Override
 	public AuthenticationResponse createAuthenticationEntry(Credential credential) throws AuthenticationException
 	{
 		AuthenticationResponse response = null; 
