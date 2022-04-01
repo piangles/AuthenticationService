@@ -170,7 +170,17 @@ public class AuthenticationDAOImpl extends AbstractDAO implements Authentication
 			sp.setString(4, token);
 			sp.setDate(5, tokenExpirationTime);
 		}, (rs, call)->{
-			return new AuthenticationResponse(token);
+			AuthenticationResponse authResponse = null;
+			boolean result = rs.getBoolean(1);
+			if (result)
+			{
+				authResponse = new AuthenticationResponse(userId, token);
+			}
+			else
+			{
+				authResponse = new AuthenticationResponse(FailureReason.AccountDoesNotExist, 1);
+			}
+			return authResponse;
 		});
 		return response;
 	}
