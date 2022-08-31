@@ -40,8 +40,8 @@ public class TestingRules
 
 		List<Rule> rules = new ArrayList<>();
 		// Rule 1: Password length should be in between
-		// 8 and 16 characters
-		rules.add(new LengthRule(8, 16));
+		// 8 and 30 characters
+		rules.add(new LengthRule(8, 30));
 		
 		// Rule 2: No whitespace allowed
 		rules.add(new WhitespaceRule());

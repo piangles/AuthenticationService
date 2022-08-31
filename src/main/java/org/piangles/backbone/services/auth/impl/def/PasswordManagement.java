@@ -95,7 +95,7 @@ public class PasswordManagement
 	 */
 	private LengthRule compileLengthRule()
 	{
-		return new LengthRule(8, 16);
+		return new LengthRule(8, 30);
 	}
 
 	private List<CharacterRule> compilePositiveMatchingRules()
