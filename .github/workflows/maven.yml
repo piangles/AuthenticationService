@@ -5,9 +5,9 @@ name: AuthenticationService Docker build CI
 
 on:
   push:
-    branches: [ passwordRule ]
+    branches: [ master ]
   pull_request:
-    branches: [ passwordRule ]
+    branches: [ master ]
     
 jobs:
   build:
