@@ -29,8 +29,8 @@ jobs:
       uses: mr-smithers-excellent/docker-build-push@v5
       with:
         image: pianglesorg/authenticationservice
-        addLatest: false
-        addTimestamp: true
+        addLatest: true
+        addTimestamp: false
         registry: docker.io
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
