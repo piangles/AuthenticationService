@@ -5,9 +5,9 @@ name: AuthenticationService Docker build CI
 
 on:
   push:
-    branches: [ passwordRule ]
+    branches: [ master ]
   pull_request:
-    branches: [ passwordRule ]
+    branches: [ master ]
     
 jobs:
   build:
@@ -29,8 +29,8 @@ jobs:
       uses: mr-smithers-excellent/docker-build-push@v5
       with:
         image: pianglesorg/authenticationservice
-        addLatest: true
-        addTimestamp: false
+        addLatest: false
+        addTimestamp: true
         registry: docker.io
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
